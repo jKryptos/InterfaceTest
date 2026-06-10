@@ -52,7 +52,7 @@ public class CombatManager {
         return this.listOfMonsters.get(0);
     }
 
-    public CombatAction recieveCombatAction(CombatAction action){
-        return this.playerAction = action;
+    public void receiveCombatAction(CombatAction action){
+        this.playerAction = action;
     }
 }
