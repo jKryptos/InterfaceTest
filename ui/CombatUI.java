@@ -22,12 +22,13 @@ public class CombatUI extends UI{
                 int input = Integer.parseInt(scanner.nextLine());
 
                 CombatAction playerAction = switch(input){
-                    case 1 -> combatManager.recieveCombatAction(CombatAction.ATTACK);
-                    case 2 -> combatManager.recieveCombatAction(CombatAction.ABILITY);
-                    case 3 -> combatManager.recieveCombatAction(CombatAction.ITEM);
+                    case 1 -> CombatAction.ATTACK;
+                    case 2 -> CombatAction.ABILITY;
+                    case 3 -> CombatAction.ITEM;
                     default -> null;
                 };
 
+            combatManager.receiveCombatAction(playerAction);
             CombatResult result = this.combatManager.processTurn();
             displayTurnResult(result);
             displayStatus();
