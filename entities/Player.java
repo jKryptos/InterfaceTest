@@ -2,11 +2,12 @@ package entities;
 
 import java.util.Random;
 
-public class Player extends Entity implements Attackable, Attacker {
+public class Player extends CombatEntity implements Combatant {
 
     private final Random rand = new Random();
 
     public Player(String name, int healthPoints, int attack, int accuracy){
+        super();
         this.name = name;
         this.maxHealthPoints = healthPoints;
         this.currentHealthPoints = this.maxHealthPoints;
@@ -21,14 +22,7 @@ public class Player extends Entity implements Attackable, Attacker {
     }
     @Override
     public boolean isDead(){
-        if(this.currentHealthPoints <= 0){
-            return true;
-        }
-        return false;
-    }
-
-    public void playerAction(){
-
+        return this.currentHealthPoints <= 0;
     }
 
     //Physical attacks with melee weapon

@@ -2,7 +2,7 @@ package entities;
 
 import java.util.Random;
 
-public class Monster extends Entity implements Attackable, Attacker {
+public class Monster extends CombatEntity implements Combatant {
 
     private final Random rand = new Random();
 
@@ -21,10 +21,8 @@ public class Monster extends Entity implements Attackable, Attacker {
     }
     @Override
     public boolean isDead(){
-        if(this.currentHealthPoints <= 0){
-            return true;
-        }
-        return false;
+        return this.currentHealthPoints <= 0;
+
     }
 
     @Override
