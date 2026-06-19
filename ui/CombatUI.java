@@ -1,10 +1,13 @@
 package ui;
 
-import combat.CombatAction;
+import combat.*;
 import combat.CombatManager;
 import combat.CombatResult;
+import entities.Monster;
+import skills.Ability;
 
 //This class calls from the CombatManager to get information for UI display
+//TODO Add Ability and Magic menus, Make windowUI for Ability/Magic/Item
 
 public class CombatUI extends UI{
 
@@ -14,27 +17,61 @@ public class CombatUI extends UI{
         super();
         this.combatManager = cm;
     }
+
     public void startCombat(){
 
         while (this.combatManager.isCombatOngoing()){
 
-                System.out.println("1. Attack\n2. Ability\n3. Item");
-                int input = Integer.parseInt(scanner.nextLine());
-
-                CombatAction playerAction = switch(input){
-                    case 1 -> CombatAction.ATTACK;
-                    case 2 -> CombatAction.ABILITY;
-                    case 3 -> CombatAction.ITEM;
-                    default -> null;
-                };
-
-            combatManager.receiveCombatAction(playerAction);
+            CombatCommand command = getPlayerCommand();
+            this.combatManager.receiveCombatCommand(command);
             CombatResult result = this.combatManager.processTurn();
             displayTurnResult(result);
-            displayStatus();
+            displayHealthOfCombatants();
         }
-        displayOutcome();
+        displayOutcomeOfCombat();
     }
+
+    public CombatCommand getPlayerCommand(){
+        while (true){
+            System.out.println("1. Attack\n2. Ability\n3. Magic\n4. Item");
+
+            try{
+                int input = Integer.parseInt(scanner.nextLine());
+
+                switch (input){
+                    case 1: {
+                        CombatCommand command = new CombatCommand(CombatAction.ATTACK);
+                        Monster target = combatManager.getMonster();
+                        command.setTarget(target);
+
+                        return command;
+                    }
+
+                    case 2: {
+                        CombatCommand command = new CombatCommand(CombatAction.ABILITY);
+                        AbilityUI aUI = new AbilityUI(combatManager.getPlayer());
+                        Ability ability = aUI.selectAbility();
+                        if(ability == null){
+                            return getPlayerCommand();
+                        }
+                        Monster target = combatManager.getMonster();
+
+                        command.setAbility(ability);
+                        command.setTarget(target);
+
+                        return command;
+                    }
+                    case 3: return new CombatCommand(CombatAction.MAGIC);
+                    case 4: return new CombatCommand(CombatAction.ITEM);
+                    default:
+                        System.out.println("Invalid option");
+                }
+            } catch (NumberFormatException e){
+                System.out.println("Please enter a number");
+            }
+        }
+    }
+
     //Shows what happened during each turn
     private void displayTurnResult(CombatResult result){
         System.out.println();
@@ -51,12 +88,12 @@ public class CombatUI extends UI{
         }
     }
     //Shows current health out of max health for combatants
-    public void displayStatus(){
+    public void displayHealthOfCombatants(){
         System.out.println("Player: " + this.combatManager.getPlayer().getCurrentHealthPoints() + "/" + this.combatManager.getPlayer().getMaxHealthPoints() + " HP");
         System.out.println(this.combatManager.getMonster().getName() + ": " + this.combatManager.getMonster().getCurrentHealthPoints() + "/" + this.combatManager.getMonster().getMaxHealthPoints() + " HP");
     }
     //Shows who dies in the fight when it is over
-    public void displayOutcome(){
+    public void displayOutcomeOfCombat(){
         if(this.combatManager.isPlayerDead()){
             System.out.println("You died!");
         } else {
