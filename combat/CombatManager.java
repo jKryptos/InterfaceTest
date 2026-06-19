@@ -2,6 +2,7 @@ package combat;
 
 import entities.Monster;
 import entities.Player;
+import skills.Ability;
 
 import java.util.ArrayList;
 
@@ -11,28 +12,45 @@ public class CombatManager {
 
     private final Player player;
     private final ArrayList<Monster> listOfMonsters;
-    private CombatAction playerAction;
+    private CombatCommand command;
 
     public CombatManager(Player player, ArrayList<Monster> listOfMonsters){
         this.player = player;
         this.listOfMonsters = listOfMonsters;
     }
     //TODO: Modify this method for dealing with multiple options during a turn's beginning
+    //TODO: Swap this.listOfMonsters.get(0).tryAttack(this.player) with a different way to get the monster
+
     public CombatResult processTurn(){
+        Monster target = this.command.getTarget();
         boolean playerHit = false;
         int playerDamage = 0;
         boolean monsterHit = false;
         int monsterDamage = 0;
 
-        if(this.playerAction == CombatAction.ATTACK){
-            playerHit = this.player.tryAttack(this.listOfMonsters.get(0));
-            playerDamage = playerHit ? this.listOfMonsters.get(0).getMostRecentDamageTaken() : 0;
+        switch(this.command.getAction()){
+            case ATTACK:
+                playerHit = this.player.tryAttack(target);
+                playerDamage = playerHit ? target.getMostRecentDamageTaken() : 0;
+                break;
 
-            if (!this.listOfMonsters.get(0).isDead()){
-                monsterHit = this.listOfMonsters.get(0).tryAttack(this.player);
-                monsterDamage = monsterHit ? this.player.getMostRecentDamageTaken() : 0;
-            }
+            case ABILITY:
+                playerHit = this.command.getAbility().use(player, target);
+                playerDamage = target.getMostRecentDamageTaken();
+                break;
+
+            case MAGIC:
+                break;
+
+            case ITEM:
+                break;
         }
+        if (!target.isDead()){
+            monsterHit = target.tryAttack(this.player);
+            monsterDamage = monsterHit ? this.player.getMostRecentDamageTaken() : 0;
+        }
+
+        tickCooldowns();
         return new CombatResult(playerHit, playerDamage, monsterHit, monsterDamage);
     }
 
@@ -52,7 +70,13 @@ public class CombatManager {
         return this.listOfMonsters.get(0);
     }
 
-    public void receiveCombatAction(CombatAction action){
-        this.playerAction = action;
+    public void receiveCombatCommand(CombatCommand command){
+        this.command = command;
+    }
+
+    public void tickCooldowns(){
+        for (Ability ability : player.getListOfAbilities()){
+            ability.tickCooldown();
+        }
     }
 }
